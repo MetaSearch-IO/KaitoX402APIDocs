@@ -1,6 +1,6 @@
 # Kaito PAYG API Documentation
 
-> **NOTE:** This API is intended for personal and internal use only. For enterprise and external use cases, contact us via [Telegram](https://t.me/kaitoai2022) or email at support@kaito.ai. 
+> **NOTE:** The below APIs are intended for personal and internal use only. For more APIs, and for enterprise and external use cases, contact us via [Telegram](https://t.me/kaitoai2022) or email at support@kaito.ai. 
 
 ## Overview
 
