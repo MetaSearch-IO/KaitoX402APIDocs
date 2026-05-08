@@ -1,6 +1,8 @@
 # Smart Followers API (Pay-As-You-Go)
 
-Returns smart follower data for a Twitter user. Supports two modes: `count` returns the cumulative smart follower count, `users` returns the list of smart followers gained on a specific date.
+Returns Kaito smart follower data for a Twitter user.
+
+Supports two modes: `count` returns the cumulative smart follower count, and `users` returns the list of smart followers for a specific date. In `count` mode, omitting `date` returns the latest precomputed count; providing `date` returns the historical cumulative count for that date.
 
 > See [README](./README.md) for base URL, payment protocol, and pricing.
 
@@ -32,10 +34,10 @@ Both `count` and `users` modes cost $0.20 per request.
 |-----------|----------|---------|-------------|
 | `user_id` | No* | - | Twitter user ID. *One of `user_id` or `username` is required. |
 | `username` | No* | - | Twitter username. *One of `user_id` or `username` is required. |
-| `date` | No | Yesterday | Date in `YYYY-MM-DD` format. Must be `>= 2024-01-01` and before today. |
+| `date` | No* | - | Date in `YYYY-MM-DD` format. Optional for `count`; required for `users`. Must be `>= 2024-01-01` and before today. |
 | `mode` | No | `count` | Response mode. `count`: returns cumulative smart follower count. `users`: returns list of smart followers for the given date. |
 
-## Example 1: Count Mode
+## Example 1: Count Mode, Latest Count
 
 **Step 1** — Get price:
 
@@ -57,13 +59,43 @@ curl -s 'https://api.kaito.ai/api/payg/smart_followers?username=VitalikButerin&m
 {
   "user_id": "123456789",
   "mode": "count",
-  "date": "2024-06-15",
+  "date": "2026-05-06",
   "num_of_smart_followers": 1234,
+  "snapshot": true,
   "current_ict": true
 }
 ```
 
-## Example 2: Users Mode
+## Example 2: Count Mode, Historical Count
+
+**Step 1** — Get price:
+
+```bash
+curl -s 'https://api.kaito.ai/api/payg/smart_followers?username=VitalikButerin&date=2024-06-15&mode=count'
+# Returns 402 with payment requirements ($0.20)
+```
+
+**Step 2** — Pay and get data:
+
+```bash
+curl -s 'https://api.kaito.ai/api/payg/smart_followers?username=VitalikButerin&date=2024-06-15&mode=count' \
+  -H 'Payment-Signature: <base64-encoded payment payload>'
+```
+
+### Response
+
+```json
+{
+  "user_id": "123456789",
+  "mode": "count",
+  "date": "2024-06-15",
+  "num_of_smart_followers": 987,
+  "snapshot": false,
+  "current_ict": true
+}
+```
+
+## Example 3: Users Mode
 
 **Step 1** — Get price:
 
@@ -97,7 +129,8 @@ curl -s 'https://api.kaito.ai/api/payg/smart_followers?username=VitalikButerin&d
 
 - **user_id**: Twitter user ID.
 - **mode**: The requested mode.
-- **date**: The date used for the query.
+- **date**: The data date used for the query. For latest `count` requests, this is the latest available data date.
 - **num_of_smart_followers**: (count mode) Cumulative smart follower count.
-- **current_ict**: (count mode) Whether the user is a recognized KOL.
+- **snapshot**: (count mode) `true` when the response uses the latest precomputed count; `false` when the response uses a date-based historical count.
+- **current_ict**: (count mode) Whether the user is currently recognized as a KOL by Kaito. May be `null` if this auxiliary classification is temporarily unavailable while the smart follower count is returned successfully.
 - **smart_followers**: (users mode) Array of smart followers with `user_id` and `username`.
